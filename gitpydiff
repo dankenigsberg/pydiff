@@ -1,32 +1,32 @@
-#!/usr/bin/bash
-diffDir=/tmp/pydiff
-fileList="$diffDir"/filelist
-mkdir -p "$diffDir"
+#!/bin/sh -e
 
-git status --porcelain -uno | egrep '^\sM\s.+$' >/dev/null
-modification=$(git diff; git diff --cached)
-if [ "$modification" != "" ]; then
-	git status
-	echo
-	echo 'Error: Workspace or git index is not clean.' >&2
-	exit 1
+oldh="$1"
+if [ -z "$1" ]; then
+    echo "Usage: $0 old_hash [new_hash]"
+    echo
+    echo "pydiff the changed files between old_hash to new_hash."
+    echo "Current HEAD is the default for new_hash."
 fi
 
-commitHead="$1"
-if [ "$commitHead" == "" ]; then
-	commitHead=$(git log --pretty=format:%H -1 HEAD)
+if [ -z "$2" ]; then
+    newh=HEAD
 else
-	commitHead=$(git log --pretty=format:%H -1 "$commitHead")
+    newh="$2"
 fi
 
-git checkout -q "$commitHead"
-git show --pretty=format:"" --numstat | awk '/(\.py|\.py.in)$/{print $3}' >"$fileList"
-cat "$fileList" | xargs -I{F} /usr/bin/cp -f --parents {F} "$diffDir"
-git checkout -q "$commitHead"~1
+oldf=`mktemp`
+newf=`mktemp`
 
-cat "$fileList" | while read filePath; do
-	echo checking "$filePath"
-	pydiff "$filePath" "$diffDir"/"$filePath"
+for f in `git diff --name-only "$newh".."$oldh"`;
+do
+    if ! echo "$f" | grep -q -E '\.py(.in)?$';
+    then
+        continue
+    fi
+
+    git show "$oldh":"$f" > "$oldf"
+    git show "$newh":"$f" > "$newf"
+    pydiff --name "$f" "$oldf" "$newf" || :
 done
 
-git checkout -q "$commitHead"
+rm "$oldf" "$newf"

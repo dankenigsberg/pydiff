@@ -54,9 +54,9 @@ It can also find insertions and deletions.
 
 
 
-gitpydiff [commitID|branch or tag ref]
+gitpydiff old_hash new_hash
 
-pydiff all .py and .py.in files in a git commit to it's parent commit.
+pydiff all .py and .py.in files that have been changed since old_hash to new_hash.
 
 
 
