@@ -328,19 +328,24 @@ def pydiff(la, ra):
 
 
 def usage(writefunc):
-    writefunc('Usage:\n%s [--diffdoc] file1 file2\n' % sys.argv[0])
+    writefunc('Usage:\n%s [--diffdoc] [--name] file1 file2\n' % sys.argv[0])
     writefunc('    --diffdoc: add this option if you want to '
-              'compare docstrings as well.\n')
+              'compare docstrings as well.\n'
+              '    --name: file name to print upon failure\n')
 
 
 if __name__ == '__main__':
-    opts, args = getopt(sys.argv[1:], '', ['diffdoc'])
+    opts, args = getopt(sys.argv[1:], '', ['diffdoc', 'name='])
     if len(args) != 2:
         usage(sys.stderr.write)
         exit(1)
     for opt, value in opts:
         if opt == '--diffdoc':
             _diffdoc = True
+        if opt == '--name':
+            filename = value
+        else:
+            filename = None
 
     lf = args[0]
     rf = args[1]
@@ -354,7 +359,10 @@ if __name__ == '__main__':
         exit(0)
 
     print '%d difference(s)' % len(diffs)
-    print 'first file: %s\nsecond file: %s\n' % (lf, rf)
+    if filename:
+        print 'in %s:' % filename
+    else:
+        print 'first file: %s\nsecond file: %s\n' % (lf, rf)
     for it in diffs:
         pprint(it)
         print
