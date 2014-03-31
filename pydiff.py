@@ -302,8 +302,7 @@ def astdiff(la, ra, lno=None, rno=None):
             rno = ra.lineno
 
     # compare strings
-    if ((isinstance(la, str) or isinstance(la, unicode)) and
-        (isinstance(ra, str) or isinstance(ra, unicode))):
+    if isinstance(la, basestring) and isinstance(ra, basestring):
         return astdiff_builtin(la, ra, lno, rno)
 
     # compare objects
